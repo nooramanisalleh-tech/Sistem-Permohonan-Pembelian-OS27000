@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MYTVET — Dashboard Pentadbir</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.5;background:#f0f2f5;color:#1f2328;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPNAV ── */
+.topnav{background:#1e3a8a;color:#fff;height:54px;display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.topnav-brand{font-weight:800;font-size:16px;letter-spacing:-.3px;white-space:nowrap}
+.topnav-sep{color:#3b5fc0;font-size:18px;margin:0 4px}
+.topnav-title{font-size:13px;color:#93c5fd;white-space:nowrap}
+.topnav-spacer{flex:1}
+.topnav-user{display:flex;align-items:center;gap:10px;font-size:13px}
+.topnav-role{background:#1d4ed8;border:1px solid #3b82f6;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.topnav-logout{color:#93c5fd;font-size:12px;cursor:pointer;border:1px solid #3b5fc0;padding:3px 10px;border-radius:5px}
+
+/* ── SHELL ── */
+.shell{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;flex-shrink:0;background:#162d6b;display:flex;flex-direction:column;padding:20px 0}
+.sb-section{padding:0 12px;margin-bottom:6px}
+.sb-label{font-size:10px;font-weight:700;color:#4e7ac7;text-transform:uppercase;letter-spacing:.7px;padding:0 8px;margin-bottom:6px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:7px;font-size:13px;color:#93c5fd;text-decoration:none;margin-bottom:2px;transition:background .15s}
+.sb-link:hover{background:#1e3a8a;color:#fff}
+.sb-link.active{background:#2563eb;color:#fff;font-weight:600}
+.sb-link .icon{font-size:15px;width:20px;text-align:center}
+.sb-divider{height:1px;background:#1e3a8a;margin:10px 12px}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:18px}
+
+/* ── PAGE HEADER ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.page-header h1{font-size:20px;font-weight:800;color:#111827}
+.page-header .sub{font-size:13px;color:#6b7280;margin-top:2px}
+.filter-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7280}
+select{border:1px solid #d1d5db;border-radius:7px;padding:6px 12px;font-size:13px;color:#374151;background:#fff;cursor:pointer}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:16px 20px;display:flex;align-items:center;gap:14px}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.stat-info{}
+.stat-label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.stat-val{font-size:26px;font-weight:800;line-height:1}
+.stat-card.blue .stat-icon{background:#eff6ff}.stat-card.blue .stat-val{color:#1d4ed8}
+.stat-card.green .stat-icon{background:#f0fdf4}.stat-card.green .stat-val{color:#16a34a}
+.stat-card.red .stat-icon{background:#fff1f2}.stat-card.red .stat-val{color:#dc2626}
+.stat-card.yellow .stat-icon{background:#fffbeb}.stat-card.yellow .stat-val{color:#d97706}
+
+/* ── MIDDLE ROW ── */
+.mid-row{display:grid;grid-template-columns:260px 1fr 1fr;gap:14px;align-items:start}
+
+/* Chart card */
+.chart-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px}
+.chart-card h3{font-size:13px;font-weight:700;color:#374151;margin-bottom:14px}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+svg.donut{overflow:visible}
+.donut-legend{width:100%;display:flex;flex-direction:column;gap:6px}
+.legend-row{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:6px}
+.legend-label{display:flex;align-items:center;color:#6b7280}
+.legend-val{font-weight:700;color:#111827}
+
+/* Action panels */
+.action-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden}
+.action-head{padding:12px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between}
+.action-head h3{font-size:13px;font-weight:700;color:#374151}
+.action-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.action-count.orange{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.action-count.red{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+.action-list{padding:0}
+.action-item{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f9fafb;font-size:13px}
+.action-item:last-child{border-bottom:none}
+.action-item-left{display:flex;align-items:center;gap:8px}
+.action-kod{font-family:monospace;font-size:10px;font-weight:700;background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:4px}
+.action-nama{color:#374151;font-size:12px}
+.action-meta{font-size:11px;color:#9ca3af}
+.action-btn{font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;text-decoration:none;border:none;cursor:pointer}
+.action-btn.semak{background:#dbeafe;color:#1e40af}
+.action-btn.tiada{background:#fef3c7;color:#92400e}
+
+/* Progress */
+.progress-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px 18px}
+.progress-head{display:flex;justify-content:space-between;font-size:13px;color:#6b7280;margin-bottom:8px}
+.progress-head strong{color:#111827}
+.progress-track{background:#f3f4f6;border-radius:99px;height:12px;overflow:hidden}
+.progress-fill{background:linear-gradient(90deg,#2563eb,#3b82f6);border-radius:99px;height:12px;width:70.6%}
+
+/* ── TABLE ── */
+.table-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden}
+.table-topbar{padding:13px 18px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between}
+.table-topbar h2{font-size:14px;font-weight:700;color:#111827}
+.table-topbar span{font-size:12px;color:#6b7280}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#f8faff}
+thead th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #e5e7eb}
+tbody tr:nth-child(even){background:#fafbff}
+tbody tr:hover{background:#eff6ff}
+tbody td{padding:10px 14px;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6}
+tbody tr:last-child td{border-bottom:none}
+.kod{background:#dbeafe;color:#1e40af;font-family:monospace;font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.badge.belum{background:#fff1f2;color:#be123c}.badge.belum::before{background:#f43f5e}
+.badge.dihantar{background:#eff6ff;color:#1d4ed8}.badge.dihantar::before{background:#3b82f6}
+.badge.semakan{background:#fffbeb;color:#92400e}.badge.semakan::before{background:#f59e0b}
+.badge.lulus{background:#f0fdf4;color:#166534}.badge.lulus::before{background:#22c55e}
+.badge.tolak{background:#fdf4ff;color:#7e22ce}.badge.tolak::before{background:#a855f7}
+.td-nama strong{display:block;font-size:13px;color:#111827}
+.td-nama span{font-size:11px;color:#9ca3af}
+.link-semak{font-size:12px;font-weight:600;color:#2563eb;text-decoration:none;padding:4px 10px;background:#eff6ff;border-radius:5px}
+.link-lihat{font-size:12px;color:#9ca3af;text-decoration:none;padding:4px 10px;background:#f9fafb;border-radius:5px;border:1px solid #e5e7eb}
+
+/* demo notice */
+.demo-notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 16px;font-size:12px;color:#92400e;text-align:center}
+
+/* ── SENARAI MAKMAL PANEL ── */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:flex-end}
+.panel-overlay.show{display:flex}
+.makmal-panel{background:#fff;width:720px;max-width:95vw;height:100vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.18)}
+.makmal-panel-head{background:#1e3a8a;color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10}
+.makmal-panel-head h2{font-size:15px;font-weight:700}
+.makmal-panel-head span{font-size:12px;color:#93c5fd}
+.panel-close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+.makmal-panel-body{padding:18px 22px;flex:1}
+.panel-search{width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 14px;font-size:13px;font-family:inherit;margin-bottom:16px}
+.panel-search:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.makmal-table{width:100%;border-collapse:collapse}
+.makmal-table thead tr{background:#f8faff}
+.makmal-table thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #e5e7eb}
+.makmal-table tbody tr{border-bottom:1px solid #f3f4f6}
+.makmal-table tbody tr:hover{background:#f0f6ff}
+.makmal-table tbody td{padding:10px 12px;font-size:13px;color:#374151}
+.makmal-table tbody tr:last-child td{border-bottom:none}
+.m-kod{font-family:monospace;font-size:11px;font-weight:700;color:#1e40af;background:#dbeafe;padding:3px 8px;border-radius:4px}
+.m-bilik{font-size:12px;color:#6b7280}
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <span class="topnav-brand">MYTVET</span>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-title">Sistem Permohonan Pembelian OS27000 — JKE POLIMAS</span>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-user">
+    <span id="topnav-nama">Pentadbir</span>
+    <span class="topnav-role">pentadbir</span>
+    <a class="topnav-logout" href="login.html" onclick="sessionStorage.clear()">Log Keluar</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Menu Utama</div>
+      <a class="sb-link active" href="dashboard-pentadbir.html"><span class="icon">📊</span> Dashboard</a>
+      <a class="sb-link" href="#" onclick="bukaPanelMakmal();return false;"><span class="icon">🏫</span> Senarai Makmal</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-label">Permohonan</div>
+      <a class="sb-link" href="semakan-permohonan.html"><span class="icon">📋</span> Semakan</a>
+      <a class="sb-link" href="laporan-gabungan.html"><span class="icon">📄</span> Laporan Pembelian</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-label">Pratonton</div>
+      <a class="sb-link" href="portal-penyelia.html"><span class="icon">📝</span> Portal Penyelia</a>
+      <a class="sb-link" href="index.html"><span class="icon">🏠</span> Halaman Utama</a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="demo-notice">⚠️ <strong>Pratonton statik</strong> — data adalah contoh, pautan tidak berfungsi sepenuhnya.</div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1>Dashboard Pentadbir</h1>
+        <p class="sub">Status penyerahan permohonan OS27000 — Tahun 2026</p>
+      </div>
+      <div class="filter-row">
+        <label>Tahun:</label>
+        <select>
+          <option selected>2026</option>
+          <option>2025</option>
+          <option>2024</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">🏫</div>
+        <div class="stat-info"><div class="stat-label">Jumlah Makmal</div><div class="stat-val">17</div></div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info"><div class="stat-label">Sudah Hantar</div><div class="stat-val">12</div></div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info"><div class="stat-label">Belum Hantar</div><div class="stat-val">5</div></div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-info"><div class="stat-label">Perlu Semak</div><div class="stat-val">3</div></div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-card">
+      <div class="progress-head">
+        <span>Kemajuan Penyerahan Tahun 2026</span>
+        <strong>12 / 17 makmal (70.6%)</strong>
+      </div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+    </div>
+
+    <!-- MIDDLE ROW: chart + 2 action panels -->
+    <div class="mid-row">
+
+      <!-- Donut Chart -->
+      <div class="chart-card">
+        <h3>Pecahan Status Makmal</h3>
+        <div class="donut-wrap">
+          <!-- SVG donut chart: Lulus=7, Dihantar=2, Semakan=1, Draf=2, Tolak=0, Belum=5 -->
+          <svg class="donut" width="150" height="150" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#e5e7eb" stroke-width="6"/>
+            <!-- Lulus: 7/17=41.2% → 41.2 of 100 -->
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#22c55e" stroke-width="6"
+              stroke-dasharray="41.2 58.8" stroke-dashoffset="25" stroke-linecap="butt"/>
+            <!-- Dihantar: 2/17=11.8% -->
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#3b82f6" stroke-width="6"
+              stroke-dasharray="11.8 88.2" stroke-dashoffset="-16.2" stroke-linecap="butt"/>
+            <!-- Semakan: 1/17=5.9% -->
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#f59e0b" stroke-width="6"
+              stroke-dasharray="5.9 94.1" stroke-dashoffset="-28" stroke-linecap="butt"/>
+            <!-- Tolak: 1/17=5.9% -->
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#a855f7" stroke-width="6"
+              stroke-dasharray="5.9 94.1" stroke-dashoffset="-33.9" stroke-linecap="butt"/>
+            <!-- Draf: 1/17=5.9% -->
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#94a3b8" stroke-width="6"
+              stroke-dasharray="5.9 94.1" stroke-dashoffset="-39.8" stroke-linecap="butt"/>
+            <!-- Belum: 5/17=29.4% -->
+            <circle cx="21" cy="21" r="15.91" fill="none" stroke="#f43f5e" stroke-width="6"
+              stroke-dasharray="29.4 70.6" stroke-dashoffset="-45.7" stroke-linecap="butt"/>
+            <text x="21" y="19.5" text-anchor="middle" font-size="5" font-weight="700" fill="#111827">70.6%</text>
+            <text x="21" y="24.5" text-anchor="middle" font-size="3.2" fill="#6b7280">Telah Hantar</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#22c55e"></span>Lulus</span><span class="legend-val">7</span></div>
+            <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#3b82f6"></span>Dihantar</span><span class="legend-val">2</span></div>
+            <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#f59e0b"></span>Dalam Semakan</span><span class="legend-val">1</span></div>
+            <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#a855f7"></span>Ditolak</span><span class="legend-val">1</span></div>
+            <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#94a3b8"></span>Draf</span><span class="legend-val">1</span></div>
+            <div class="legend-row"><span class="legend-label"><span class="legend-dot" style="background:#f43f5e"></span>Belum Hantar</span><span class="legend-val">5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Perlu Semak -->
+      <div class="action-card">
+        <div class="action-head">
+          <h3>🔍 Perlu Semakan Segera</h3>
+          <span class="action-count orange">3 permohonan</span>
+        </div>
+        <div class="action-list">
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">BPRO</span>
+              <div><div class="action-nama">Bengkel Projek JKE</div><div class="action-meta">Dihantar: 15/10/2026 • 8 item</div></div>
+            </div>
+            <a class="action-btn semak" href="semakan-permohonan.html">Semak →</a>
+          </div>
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">MDG</span>
+              <div><div class="action-nama">Makmal Digital</div><div class="action-meta">Dihantar: 20/10/2026 • 6 item</div></div>
+            </div>
+            <a class="action-btn semak" href="semakan-permohonan.html">Semak →</a>
+          </div>
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">MIK</span>
+              <div><div class="action-nama">Makmal Instrumentasi &amp; Kawalan</div><div class="action-meta">Dihantar: 22/10/2026 • 5 item</div></div>
+            </div>
+            <a class="action-btn semak" href="semakan-permohonan.html">Semak →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: Belum Hantar -->
+      <div class="action-card">
+        <div class="action-head">
+          <h3>⏳ Belum Menghantar</h3>
+          <span class="action-count red">5 makmal</span>
+        </div>
+        <div class="action-list">
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">MME</span>
+              <div><div class="action-nama">Makmal Mikroelektronik</div><div class="action-meta">Pn. Zahilawati Bt Awang Kechik</div></div>
+            </div>
+            <span class="action-btn tiada">Tiada rekod</span>
+          </div>
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">MEL</span>
+              <div><div class="action-nama">Makmal MEL</div><div class="action-meta">Pn. Siti Noraini Binti Abdullah</div></div>
+            </div>
+            <span class="action-btn tiada">Tiada rekod</span>
+          </div>
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">MK2</span>
+              <div><div class="action-nama">Makmal Komputer 2</div><div class="action-meta">En. Mohd Ridzuan Bin Abdul Rahman</div></div>
+            </div>
+            <span class="action-btn tiada">Tiada rekod</span>
+          </div>
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">MAC2</span>
+              <div><div class="action-nama">Makmal AutoCAD 2</div><div class="action-meta">Pn. Afidah Binti Abdul Malik</div></div>
+            </div>
+            <span class="action-btn tiada">Tiada rekod</span>
+          </div>
+          <div class="action-item">
+            <div class="action-item-left">
+              <span class="action-kod">—</span>
+              <div><div class="action-nama">Makmal Bil. 17</div><div class="action-meta">En. Mohd Firdaus Bin Mohd Mokhtar</div></div>
+            </div>
+            <span class="action-btn tiada">Tiada rekod</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /mid-row -->
+
+    <!-- TABLE: semua 17 makmal -->
+    <div class="table-card">
+      <div class="table-topbar">
+        <h2>Status Keseluruhan — 17 Makmal</h2>
+        <span>Tahun 2026</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th style="width:90px">Kod</th>
+            <th>Nama Makmal</th>
+            <th>Penyelia</th>
+            <th style="width:140px">Status</th>
+            <th style="width:110px">Tarikh Hantar</th>
+            <th style="width:120px">Bil. Item</th>
+            <th style="width:80px">Tindakan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">1</td><td><span class="kod">MTEL</span></td><td class="td-nama"><strong>Makmal Telekomunikasi</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Noor Amani Binti Salleh</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">01/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">5 item</td><td><a class="link-lihat" href="semakan-permohonan.html">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">2</td><td><span class="kod">MEB</span></td><td class="td-nama"><strong>Makmal Elektronik &amp; Baikpulih Alat</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Lee Ka Gaik</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">03/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">7 item</td><td><a class="link-lihat" href="semakan-permohonan.html">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">3</td><td><span class="kod">BPRO</span></td><td class="td-nama"><strong>Bengkel Projek JKE</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">En. Zulkefli Bin Iberahim</td><td><span class="badge semakan">Dalam Semakan</span></td><td style="font-size:12px;color:#6b7280">15/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">8 item</td><td><a class="link-semak" href="semakan-permohonan.html">Semak</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">4</td><td><span class="kod">MDG</span></td><td class="td-nama"><strong>Makmal Digital</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Penyelia Makmal Digital</td><td><span class="badge dihantar">Dihantar</span></td><td style="font-size:12px;color:#6b7280">20/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">6 item</td><td><a class="link-semak" href="semakan-permohonan.html">Semak</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">5</td><td><span class="kod">MIK</span></td><td class="td-nama"><strong>Makmal Instrumentasi &amp; Kawalan</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Suriati Binti Johari</td><td><span class="badge dihantar">Dihantar</span></td><td style="font-size:12px;color:#6b7280">22/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">5 item</td><td><a class="link-semak" href="semakan-permohonan.html">Semak</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">6</td><td><span class="kod">BPEN</span></td><td class="td-nama"><strong>Bengkel Pendawaian</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">En. Muhammad Bunyamin Bin Ismail</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">05/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">10 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">7</td><td><span class="kod">MKU</span></td><td class="td-nama"><strong>Makmal Elektrik Kuasa</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">En. Mohd Ridzuan Bin Abdul Hamid</td><td><span class="badge tolak">Ditolak</span></td><td style="font-size:12px;color:#6b7280">08/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">4 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">8</td><td><span class="kod">MMS</span></td><td class="td-nama"><strong>Makmal Mesin</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Tn. Hj. Wan Mahzhir Bin Wan Mahmud</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">10/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">9 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">9</td><td><span class="kod">MEK</span></td><td class="td-nama"><strong>Makmal Elektronik Kuasa</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Rosmawati Binti Abd. Razak</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">11/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">6 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">10</td><td><span class="kod">MPT</span></td><td class="td-nama"><strong>Makmal MPT</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Hartini Binti Abdul Hamid</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">13/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">7 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">11</td><td><span class="kod">MKD</span></td><td class="td-nama"><strong>Makmal MKD</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Akma Binti Che Ishak</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">14/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">5 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">12</td><td><span class="kod">MMK</span></td><td class="td-nama"><strong>Makmal Mikrokomputer</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Ts. Mohd Nur Yassieen Bin Mat Zaki</td><td><span class="badge lulus">Lulus</span></td><td style="font-size:12px;color:#6b7280">16/10/2026</td><td style="font-size:12px;color:#374151;text-align:center">6 item</td><td><a class="link-lihat" href="#">Lihat</a></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">13</td><td><span class="kod">MME</span></td><td class="td-nama"><strong>Makmal Mikroelektronik</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Zahilawati Bt Awang Kechik</td><td><span class="badge belum">Belum Hantar</span></td><td style="font-size:12px;color:#9ca3af">—</td><td style="font-size:12px;color:#9ca3af;text-align:center">—</td><td></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">14</td><td><span class="kod">MEL</span></td><td class="td-nama"><strong>Makmal MEL</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Siti Noraini Binti Abdullah</td><td><span class="badge belum">Belum Hantar</span></td><td style="font-size:12px;color:#9ca3af">—</td><td style="font-size:12px;color:#9ca3af;text-align:center">—</td><td></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">15</td><td><span class="kod">MK2</span></td><td class="td-nama"><strong>Makmal Komputer 2</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">En. Mohd Ridzuan Bin Abdul Rahman</td><td><span class="badge belum">Belum Hantar</span></td><td style="font-size:12px;color:#9ca3af">—</td><td style="font-size:12px;color:#9ca3af;text-align:center">—</td><td></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">16</td><td><span class="kod">MAC2</span></td><td class="td-nama"><strong>Makmal AutoCAD 2</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">Pn. Afidah Binti Abdul Malik</td><td><span class="badge belum">Belum Hantar</span></td><td style="font-size:12px;color:#9ca3af">—</td><td style="font-size:12px;color:#9ca3af;text-align:center">—</td><td></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px;text-align:center">17</td><td><span class="kod">—</span></td><td class="td-nama"><strong>Makmal Bil. 17</strong><span>Makmal JKE</span></td><td style="font-size:12px;color:#6b7280">En. Mohd Firdaus Bin Mohd Mokhtar</td><td><span class="badge belum">Belum Hantar</span></td><td style="font-size:12px;color:#9ca3af">—</td><td style="font-size:12px;color:#9ca3af;text-align:center">—</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /shell -->
+
+<script>
+var _n = sessionStorage.getItem('mytvet_nama');
+if (_n) document.getElementById('topnav-nama').textContent = _n;
+</script>
+
+<!-- PANEL SENARAI MAKMAL -->
+<div class="panel-overlay" id="panel-makmal" onclick="tutupPanelMakmal(event)">
+  <div class="makmal-panel" onclick="event.stopPropagation()">
+    <div class="makmal-panel-head">
+      <div>
+        <h2>🏫 Senarai Makmal / Bengkel JKE POLIMAS</h2>
+        <span>17 Makmal &amp; Bengkel — Tahun 2026</span>
+      </div>
+      <button class="panel-close" onclick="tutupPanelMakmal()">✕ Tutup</button>
+    </div>
+    <div class="makmal-panel-body">
+      <input class="panel-search" type="text" placeholder="🔍  Cari nama makmal, kod atau penyelia..." oninput="cariMakmal(this.value)" id="inp-cari-makmal">
+      <table class="makmal-table" id="tbl-makmal">
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th style="width:70px">Kod</th>
+            <th>Nama Makmal / Bengkel</th>
+            <th style="width:70px">Bilik</th>
+            <th>Penyelia</th>
+            <th style="width:110px">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-makmal">
+          <tr><td style="color:#9ca3af;font-size:12px">1</td><td><span class="m-kod">MTEL</span></td><td><strong>Makmal Telekomunikasi</strong></td><td class="m-bilik">KE03</td><td style="font-size:12px">Pn. Noor Amani Binti Salleh</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">2</td><td><span class="m-kod">MEB</span></td><td><strong>Makmal Elektronik &amp; Baikpulih Alat</strong></td><td class="m-bilik">KE04</td><td style="font-size:12px">Pn. Lee Ka Gaik</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">3</td><td><span class="m-kod">BPRO</span></td><td><strong>Bengkel Projek JKE</strong></td><td class="m-bilik">KE05</td><td style="font-size:12px">En. Zulkefli Bin Iberahim</td><td><span class="badge semakan">Semakan</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">4</td><td><span class="m-kod">MDG</span></td><td><strong>Makmal Digital</strong></td><td class="m-bilik">KE06</td><td style="font-size:12px">Penyelia Makmal Digital</td><td><span class="badge dihantar">Dihantar</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">5</td><td><span class="m-kod">MIK</span></td><td><strong>Makmal Instrumentasi &amp; Kawalan</strong></td><td class="m-bilik">KE07</td><td style="font-size:12px">Pn. Suriati Binti Johari</td><td><span class="badge dihantar">Dihantar</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">6</td><td><span class="m-kod">BPEN</span></td><td><strong>Bengkel Pendawaian</strong></td><td class="m-bilik">KE08</td><td style="font-size:12px">En. Muhammad Bunyamin Bin Ismail</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">7</td><td><span class="m-kod">MKU</span></td><td><strong>Makmal Elektrik Kuasa</strong></td><td class="m-bilik">KE09</td><td style="font-size:12px">En. Mohd Ridzuan Bin Abdul Hamid</td><td><span class="badge tolak">Ditolak</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">8</td><td><span class="m-kod">MMS</span></td><td><strong>Makmal Mesin</strong></td><td class="m-bilik">KE10</td><td style="font-size:12px">Tn. Hj. Wan Mahzhir Bin Wan Mahmud</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">9</td><td><span class="m-kod">MEK</span></td><td><strong>Makmal Elektronik Kuasa</strong></td><td class="m-bilik">KE11</td><td style="font-size:12px">Pn. Rosmawati Binti Abd. Razak</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">10</td><td><span class="m-kod">MPT</span></td><td><strong>Makmal MPT</strong></td><td class="m-bilik">KE13</td><td style="font-size:12px">Pn. Hartini Binti Abdul Hamid</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">11</td><td><span class="m-kod">MKD</span></td><td><strong>Makmal MKD</strong></td><td class="m-bilik">KE16</td><td style="font-size:12px">Pn. Akma Binti Che Ishak</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">12</td><td><span class="m-kod">MMK</span></td><td><strong>Makmal Mikrokomputer</strong></td><td class="m-bilik">KE17</td><td style="font-size:12px">Ts. Mohd Nur Yassieen Bin Mat Zaki</td><td><span class="badge lulus">Lulus</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">13</td><td><span class="m-kod">MME</span></td><td><strong>Makmal Mikroelektronik</strong></td><td class="m-bilik">KE18</td><td style="font-size:12px">Pn. Zahilawati Bt Awang Kechik</td><td><span class="badge belum">Belum Hantar</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">14</td><td><span class="m-kod">MEL</span></td><td><strong>Makmal MEL</strong></td><td class="m-bilik">KE19</td><td style="font-size:12px">Pn. Siti Noraini Binti Abdullah</td><td><span class="badge belum">Belum Hantar</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">15</td><td><span class="m-kod">MK2</span></td><td><strong>Makmal Komputer 2</strong></td><td class="m-bilik">KE22</td><td style="font-size:12px">En. Mohd Ridzuan Bin Abdul Rahman</td><td><span class="badge belum">Belum Hantar</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">16</td><td><span class="m-kod">MAC2</span></td><td><strong>Makmal AutoCAD 2</strong></td><td class="m-bilik">KE23</td><td style="font-size:12px">Pn. Afidah Binti Abdul Malik</td><td><span class="badge belum">Belum Hantar</span></td></tr>
+          <tr><td style="color:#9ca3af;font-size:12px">17</td><td><span class="m-kod">—</span></td><td><strong>Makmal Bil. 17</strong></td><td class="m-bilik">—</td><td style="font-size:12px">En. Mohd Firdaus Bin Mohd Mokhtar</td><td><span class="badge belum">Belum Hantar</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function bukaPanelMakmal() {
+  document.getElementById('panel-makmal').classList.add('show');
+  document.getElementById('inp-cari-makmal').value = '';
+  cariMakmal('');
+}
+function tutupPanelMakmal(e) {
+  if (!e || e.target === document.getElementById('panel-makmal')) {
+    document.getElementById('panel-makmal').classList.remove('show');
+  }
+}
+function cariMakmal(q) {
+  var rows = document.querySelectorAll('#tbody-makmal tr');
+  q = q.toLowerCase();
+  rows.forEach(function(r) {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') tutupPanelMakmal({target: document.getElementById('panel-makmal')});
+});
+</script>
+
+</body>
+</html>

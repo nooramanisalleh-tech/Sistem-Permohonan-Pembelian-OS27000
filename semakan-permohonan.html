@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MYTVET — Semakan Permohonan</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#f0f2f5;color:#1f2328;display:flex;flex-direction:column;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.topnav{background:#1e3a8a;color:#fff;height:54px;display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.topnav-brand{font-weight:800;font-size:16px;letter-spacing:-.3px}
+.topnav-sep{color:#3b5fc0;font-size:18px;margin:0 4px}
+.topnav-title{font-size:13px;color:#93c5fd}
+.topnav-spacer{flex:1}
+.topnav-user{display:flex;align-items:center;gap:10px;font-size:13px}
+.topnav-role{background:#1d4ed8;border:1px solid #3b82f6;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.topnav-logout{color:#93c5fd;font-size:12px;cursor:pointer;border:1px solid #3b5fc0;padding:3px 10px;border-radius:5px}
+.shell{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:#162d6b;display:flex;flex-direction:column;padding:20px 0}
+.sb-section{padding:0 12px;margin-bottom:6px}
+.sb-label{font-size:10px;font-weight:700;color:#4e7ac7;text-transform:uppercase;letter-spacing:.7px;padding:0 8px;margin-bottom:6px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:7px;font-size:13px;color:#93c5fd;text-decoration:none;margin-bottom:2px}
+.sb-link:hover{background:#1e3a8a;color:#fff}
+.sb-link.active{background:#2563eb;color:#fff;font-weight:600}
+.sb-divider{height:1px;background:#1e3a8a;margin:10px 12px}
+.content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+main{flex:1;display:flex;flex-direction:column;gap:14px}
+h1{font-size:18px;font-weight:700;color:#111827}
+.card{background:#fff;border-radius:8px;border:1px solid #e5e7eb;padding:16px 18px}
+.badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.badge.dihantar{background:#dbeafe;color:#1e40af}
+.badge.semakan{background:#fef3c7;color:#92400e}
+.back-link{font-size:13px;color:#2563eb}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.meta-label{font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.meta-val{font-size:14px;font-weight:600;color:#111827}
+.meta-sub{font-size:12px;color:#6b7280}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#f9fafb}
+thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #e5e7eb}
+th.right,td.right{text-align:right}
+tbody tr{border-bottom:1px solid #f3f4f6}
+tbody tr:hover{background:#fafafa}
+tbody td{padding:9px 12px;font-size:13px;color:#374151}
+tfoot td{padding:9px 12px;background:#f9fafb;border-top:2px solid #e5e7eb;font-size:13px}
+.kod-sps{font-family:monospace;font-size:11px;font-weight:700;color:#1e40af;background:#dbeafe;padding:2px 8px;border-radius:4px}
+.spec{font-size:12px;color:#9ca3af}
+.table-topbar{padding:11px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:13px}
+.tindakan{display:flex;gap:12px;align-items:flex-start}
+label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px}
+textarea{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;white-space:nowrap}
+.btn-green{background:#16a34a;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.demo-notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:11px 16px;font-size:12px;color:#92400e;text-align:center}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="topnav-brand">MYTVET</span>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-title">Sistem Permohonan Pembelian OS27000 — JKE POLIMAS</span>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-user">
+    <span id="topnav-nama">Pn. Noor Amani</span>
+    <span class="topnav-role">pentadbir</span>
+    <a class="topnav-logout" href="login.html" onclick="sessionStorage.clear()">Log Keluar</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Menu Utama</div>
+      <a class="sb-link" href="dashboard-pentadbir.html"><span>📊</span> Dashboard</a>
+      <a class="sb-link" href="#"><span>🏫</span> Senarai Makmal</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-label">Permohonan</div>
+      <a class="sb-link active" href="semakan-permohonan.html"><span>📋</span> Semakan</a>
+      <a class="sb-link" href="laporan-gabungan.html"><span>📄</span> Laporan Pembelian</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-label">Pratonton</div>
+      <a class="sb-link" href="portal-penyelia.html"><span>📝</span> Portal Penyelia</a>
+      <a class="sb-link" href="index.html"><span>🏠</span> Halaman Utama</a>
+    </div>
+  </aside>
+
+  <div class="content">
+
+  <main>
+
+    <div class="demo-notice">⚠️ Ini adalah <strong>pratonton statik</strong> sahaja. Data adalah contoh. Butang tidak berfungsi.</div>
+
+    <!-- Back + Title -->
+    <div style="display:flex;align-items:center;gap:12px">
+      <a class="back-link" href="dashboard-pentadbir.html">← Kembali</a>
+      <h1>Semakan Permohonan</h1>
+      <span class="badge dihantar">Dihantar</span>
+    </div>
+
+    <!-- Maklumat -->
+    <div class="card">
+      <div class="meta-grid">
+        <div>
+          <div class="meta-label">Makmal</div>
+          <div class="meta-val">Makmal Komunikasi 1</div>
+          <div class="meta-sub">MKL-04</div>
+        </div>
+        <div>
+          <div class="meta-label">Penyelia</div>
+          <div class="meta-val">Penyelia 04</div>
+          <div class="meta-sub">penyelia04@mytvet.edu.my</div>
+        </div>
+        <div>
+          <div class="meta-label">Tarikh Dihantar</div>
+          <div class="meta-val">20/10/2026</div>
+          <div class="meta-sub">09:42 pagi</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Senarai Item -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-topbar">
+        <strong>Senarai Item (6)</strong>
+        <strong>Jumlah: RM 1,247.50</strong>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Kod SPS</th><th>Nama Komponen</th><th>Spesifikasi</th>
+            <th class="right">Harga/Unit</th><th class="right">Kuantiti</th><th class="right">Jumlah</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="kod-sps">SPS-0001</span></td>
+            <td><strong>Resistor 10kΩ</strong></td>
+            <td class="spec">1/4W, ±5%</td>
+            <td class="right">RM 0.50</td><td class="right">150</td><td class="right"><strong>RM 75.00</strong></td>
+          </tr>
+          <tr>
+            <td><span class="kod-sps">SPS-0004</span></td>
+            <td><strong>IC 555 Timer</strong></td>
+            <td class="spec">DIP-8, 5–15V</td>
+            <td class="right">RM 1.80</td><td class="right">80</td><td class="right"><strong>RM 144.00</strong></td>
+          </tr>
+          <tr>
+            <td><span class="kod-sps">SPS-0011</span></td>
+            <td><strong>Modul Bluetooth HC-05</strong></td>
+            <td class="spec">5V, UART, Master/Slave</td>
+            <td class="right">RM 18.00</td><td class="right">15</td><td class="right"><strong>RM 270.00</strong></td>
+          </tr>
+          <tr>
+            <td><span class="kod-sps">SPS-0012</span></td>
+            <td><strong>Modul WiFi ESP8266</strong></td>
+            <td class="spec">3.3V, 802.11 b/g/n</td>
+            <td class="right">RM 22.00</td><td class="right">10</td><td class="right"><strong>RM 220.00</strong></td>
+          </tr>
+          <tr>
+            <td><span class="kod-sps">SPS-0022</span></td>
+            <td><strong>Wayar Jumper 40pcs</strong></td>
+            <td class="spec">Male-to-Male, 20cm</td>
+            <td class="right">RM 8.50</td><td class="right">20</td><td class="right"><strong>RM 170.00</strong></td>
+          </tr>
+          <tr>
+            <td><span class="kod-sps">SPS-0030</span></td>
+            <td><strong>PCB Veroboard</strong></td>
+            <td class="spec">100×160mm, Single-sided</td>
+            <td class="right">RM 7.40</td><td class="right">50</td><td class="right"><strong>RM 370.00</strong></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" class="right" style="font-weight:600;color:#374151">Jumlah Kos Anggaran:</td>
+            <td class="right" style="font-weight:800;color:#111827">RM 1,249.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Tindakan Pentadbir -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:14px">Tindakan Pentadbir</div>
+      <div class="tindakan">
+        <!-- Lulus -->
+        <button class="btn btn-green">✅ Lulus Permohonan</button>
+
+        <!-- Tolak -->
+        <div style="flex:1">
+          <label>Catatan (wajib jika tolak) <span style="color:#dc2626">*</span></label>
+          <textarea rows="2" placeholder="Nyatakan sebab penolakan atau item yang perlu diperbetulkan..."></textarea>
+          <div style="margin-top:8px">
+            <button class="btn btn-red">❌ Tolak / Minta Betul</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  </div>
+</div>
+
+<script>var _n=sessionStorage.getItem('mytvet_nama');if(_n)document.getElementById('topnav-nama').textContent=_n;</script>
+</body>
+</html>

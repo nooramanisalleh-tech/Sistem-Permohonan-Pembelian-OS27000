@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MYTVET — Portal Penyelia</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#f0f2f5;color:#1f2328;display:flex;flex-direction:column;min-height:100vh}
+a{color:inherit;text-decoration:none}
+
+/* ── TOPNAV ── */
+.topnav{background:#1e3a8a;color:#fff;height:54px;display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.topnav-brand{font-weight:800;font-size:16px;letter-spacing:-.3px}
+.topnav-sep{color:#3b5fc0;font-size:18px;margin:0 4px}
+.topnav-title{font-size:13px;color:#93c5fd}
+.topnav-spacer{flex:1}
+.topnav-user{display:flex;align-items:center;gap:10px;font-size:13px}
+.topnav-role{background:#065f46;border:1px solid #16a34a;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.topnav-logout{color:#93c5fd;font-size:12px;cursor:pointer;border:1px solid #3b5fc0;padding:3px 10px;border-radius:5px}
+
+/* ── SHELL ── */
+.shell{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:#162d6b;display:flex;flex-direction:column;padding:20px 0}
+.sb-section{padding:0 12px;margin-bottom:6px}
+.sb-label{font-size:10px;font-weight:700;color:#4e7ac7;text-transform:uppercase;letter-spacing:.7px;padding:0 8px;margin-bottom:6px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:7px;font-size:13px;color:#93c5fd;text-decoration:none;margin-bottom:2px}
+.sb-link:hover{background:#1e3a8a;color:#fff}
+.sb-link.active{background:#2563eb;color:#fff;font-weight:600}
+.sb-divider{height:1px;background:#1e3a8a;margin:10px 12px}
+.content{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden}
+.card-head{padding:13px 18px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:8px;background:#f8faff}
+.card-head h3{font-size:13px;font-weight:700;color:#1e3a8a}
+.card-body{padding:16px 18px}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px}
+.req{color:#dc2626}
+input[type=text],input[type=number],select,textarea{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;font-size:13px;color:#374151;font-family:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+input[readonly]{background:#f9fafb;color:#6b7280}
+.form-footer{grid-column:1/-1;text-align:right;padding-top:4px}
+
+/* ── STATUS BAR ── */
+.status-bar{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.status-left{display:flex;align-items:center;gap:10px;font-size:13px;color:#6b7280}
+.badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.badge.draf{background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db}
+.badge.dihantar{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;white-space:nowrap}
+.btn-green{background:#16a34a;color:#fff}
+.btn-green:hover{background:#15803d}
+.btn-blue{background:#2563eb;color:#fff}
+.btn-blue:hover{background:#1d4ed8}
+.btn-gray{background:#e5e7eb;color:#374151}
+.btn-outline{background:#fff;color:#374151;border:1px solid #d1d5db}
+
+/* ── UPLOAD ── */
+.upload-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.templ-link{font-size:12px;color:#2563eb}
+.upload-form{display:flex;align-items:center;gap:8px}
+.file-input{font-size:12px;color:#374151}
+
+/* ── TABLE ── */
+.table-box{background:#fff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden}
+.table-topbar{padding:11px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:13px}
+.table-topbar strong{color:#111827}
+.table-topbar span{color:#6b7280}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#f8faff}
+thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #e5e7eb}
+th.right,td.right{text-align:right}
+tbody tr{border-bottom:1px solid #f3f4f6}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#fafafa}
+tbody td{padding:9px 12px;font-size:13px;color:#374151}
+tfoot td{padding:9px 12px;background:#f9fafb;border-top:2px solid #e5e7eb;font-size:13px}
+.kod-sps{font-family:monospace;font-size:11px;font-weight:700;color:#1e40af;background:#dbeafe;padding:2px 8px;border-radius:4px}
+.spec{font-size:12px;color:#9ca3af}
+.act-link{font-size:12px;color:#2563eb;margin-right:8px}
+.del-link{font-size:12px;color:#dc2626}
+
+/* ── PENGESAHAN ── */
+.pengesahan-card{background:#fff;border-radius:10px;border:2px solid #2563eb;overflow:hidden}
+.pengesahan-head{padding:13px 18px;background:#eff6ff;border-bottom:1px solid #bfdbfe;display:flex;align-items:center;gap:8px}
+.pengesahan-head h3{font-size:13px;font-weight:700;color:#1e40af}
+.pengesahan-body{padding:18px}
+.checkbox-row{display:flex;align-items:flex-start;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.checkbox-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:#16a34a}
+.checkbox-row label{font-size:13px;color:#166534;font-weight:500;margin:0;cursor:pointer}
+
+/* ── RINGKASAN ── */
+.ringkasan-box{background:#f0fdf4;border:2px solid #16a34a;border-radius:10px;padding:20px 22px;display:none}
+.ringkasan-box.show{display:block}
+.ringkasan-title{font-size:15px;font-weight:800;color:#166534;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ringkasan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.rg-item .rg-label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.rg-item .rg-val{font-size:13px;font-weight:600;color:#111827}
+.rg-item .rg-val.rujukan{font-family:monospace;color:#1e40af;background:#dbeafe;padding:2px 8px;border-radius:4px;display:inline-block}
+.ringkasan-table{width:100%;border-collapse:collapse;margin-top:10px;background:#fff;border-radius:8px;overflow:hidden}
+.ringkasan-table thead tr{background:#1e3a8a}
+.ringkasan-table thead th{text-align:left;padding:8px 12px;font-size:11px;font-weight:700;color:#e0e7ff;text-transform:uppercase;letter-spacing:.4px}
+.ringkasan-table tbody td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f3f4f6}
+.ringkasan-table tfoot td{padding:8px 12px;background:#f8faff;border-top:2px solid #e5e7eb;font-size:13px;font-weight:700}
+.ringkasan-table th.right,.ringkasan-table td.right{text-align:right}
+.ringkasan-footer{margin-top:14px;display:flex;justify-content:flex-end;gap:8px}
+
+/* ── MISC ── */
+.demo-notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:11px 16px;font-size:12px;color:#92400e;text-align:center}
+.page-title{font-size:18px;font-weight:800;color:#111827}
+.page-sub{font-size:13px;color:#6b7280;margin-top:3px}
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <span class="topnav-brand">MYTVET</span>
+  <span class="topnav-sep">|</span>
+  <span class="topnav-title">Sistem Permohonan Pembelian OS27000 — JKE POLIMAS</span>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-user">
+    <span id="topnav-nama">Penyelia</span>
+    <span class="topnav-role">penyelia</span>
+    <a class="topnav-logout" href="login.html" onclick="sessionStorage.clear()">Log Keluar</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Menu Penyelia</div>
+      <a class="sb-link active" href="portal-penyelia.html"><span>📝</span> Permohonan Saya</a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-label">Navigasi</div>
+      <a class="sb-link" href="index.html"><span>🏠</span> Halaman Utama</a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="demo-notice">⚠️ Ini adalah <strong>pratonton statik</strong>. Dropdown dan pengesahan berfungsi sebagai demonstrasi sahaja.</div>
+
+    <!-- Page Title -->
+    <div>
+      <div class="page-title">Permohonan Pembelian Bahan Luak OS27000</div>
+      <div class="page-sub" id="sub-makmal">Sila pilih makmal di bawah untuk memulakan permohonan</div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div class="status-left">
+        <span>Status:</span>
+        <span class="badge draf" id="badge-status">Draf</span>
+        <span style="font-size:12px;color:#9ca3af" id="label-status">Belum dihantar</span>
+      </div>
+      <span style="font-size:12px;color:#6b7280">Tahun: <strong id="display-tahun">—</strong></span>
+    </div>
+
+    <!-- ① MAKLUMAT PERMOHONAN -->
+    <div class="card">
+      <div class="card-head">
+        <span>📋</span>
+        <h3>Maklumat Permohonan</h3>
+      </div>
+      <div class="card-body">
+        <div class="form-grid cols3">
+
+          <div>
+            <label for="sel-makmal">Pilih Makmal / Bengkel <span class="req">*</span></label>
+            <select id="sel-makmal" onchange="kemaskiniMakmal()">
+              <option value="">— Sila pilih —</option>
+              <option value="MTEL|Makmal Telekomunikasi|KE03">MTEL — Makmal Telekomunikasi</option>
+              <option value="MEB|Makmal Elektronik & Baikpulih Alat|KE04">MEB — Makmal Elektronik &amp; Baikpulih Alat</option>
+              <option value="BPRO|Bengkel Projek JKE|KE05">BPRO — Bengkel Projek JKE</option>
+              <option value="MDG|Makmal Digital|KE06">MDG — Makmal Digital</option>
+              <option value="MIK|Makmal Instrumentasi & Kawalan|KE07">MIK — Makmal Instrumentasi &amp; Kawalan</option>
+              <option value="BPEN|Bengkel Pendawaian|KE08">BPEN — Bengkel Pendawaian</option>
+              <option value="MKU|Makmal Elektrik Kuasa|KE09">MKU — Makmal Elektrik Kuasa</option>
+              <option value="MMS|Makmal Mesin|KE10">MMS — Makmal Mesin</option>
+              <option value="MEK|Makmal Elektronik Kuasa|KE11">MEK — Makmal Elektronik Kuasa</option>
+              <option value="MPT|Makmal MPT|KE13">MPT — Makmal MPT</option>
+              <option value="MKD|Makmal MKD|KE16">MKD — Makmal MKD</option>
+              <option value="MMK|Makmal Mikrokomputer|KE17">MMK — Makmal Mikrokomputer</option>
+              <option value="MME|Makmal Mikroelektronik|KE18">MME — Makmal Mikroelektronik</option>
+              <option value="MEL|Makmal MEL|KE19">MEL — Makmal MEL</option>
+              <option value="MK2|Makmal Komputer 2|KE22">MK2 — Makmal Komputer 2</option>
+              <option value="MAC2|Makmal AutoCAD 2|KE23">MAC2 — Makmal AutoCAD 2</option>
+              <option value="MKL17|Makmal Bil. 17|—">MKL17 — Makmal Bil. 17</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="inp-tahun">Tahun Permohonan <span class="req">*</span></label>
+            <select id="inp-tahun" onchange="kemaskiniRujukan()">
+              <option value="">— Pilih tahun —</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Nombor Rujukan</label>
+            <input type="text" id="inp-rujukan" readonly placeholder="Auto-jana selepas pilih makmal &amp; tahun">
+          </div>
+
+          <div>
+            <label for="inp-pemohon">Nama Pemohon <span class="req">*</span></label>
+            <input type="text" id="inp-pemohon" placeholder="cth: Pn. Noor Amani Binti Salleh" value="Pn. Noor Amani Binti Salleh">
+          </div>
+
+          <div>
+            <label for="inp-jawatan">Jawatan</label>
+            <input type="text" id="inp-jawatan" placeholder="cth: Penyelia Makmal" value="Penyelia Makmal">
+          </div>
+
+          <div>
+            <label for="inp-tarikh">Tarikh Permohonan</label>
+            <input type="text" id="inp-tarikh" placeholder="cth: 04/11/2026" value="04/11/2026">
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ② IMPORT EXCEL -->
+    <div class="card">
+      <div class="card-head">
+        <span>📥</span>
+        <h3>Import dari Excel</h3>
+      </div>
+      <div class="card-body">
+        <div class="upload-row">
+          <div style="font-size:13px;color:#6b7280">Muat naik fail Excel yang mengandungi senarai item permohonan</div>
+          <a class="templ-link" href="#">⬇ Muat turun templat</a>
+        </div>
+        <div class="upload-form">
+          <input type="file" class="file-input" accept=".xlsx,.xls">
+          <button class="btn btn-blue" style="padding:7px 14px;font-size:12px">Import Excel</button>
+        </div>
+        <p style="font-size:11px;color:#9ca3af;margin-top:6px">Format yang diterima: .xlsx, .xls (maksimum 2MB)</p>
+      </div>
+    </div>
+
+    <!-- ③ TAMBAH ITEM MANUAL -->
+    <div class="card">
+      <div class="card-head">
+        <span>➕</span>
+        <h3>Tambah Item Baru (Manual)</h3>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div>
+            <label>Kod SPS <span class="req">*</span></label>
+            <input type="text" placeholder="cth: SPS-0123">
+          </div>
+          <div>
+            <label>Nama Komponen <span class="req">*</span></label>
+            <input type="text" placeholder="cth: Resistor 10kΩ">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Spesifikasi</label>
+            <input type="text" placeholder="cth: 1/4W, ±5%, Through-hole">
+          </div>
+          <div>
+            <label>Harga Seunit (RM) <span class="req">*</span></label>
+            <input type="number" placeholder="0.00" step="0.01">
+          </div>
+          <div>
+            <label>Kuantiti <span class="req">*</span></label>
+            <input type="number" placeholder="1" min="1">
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-blue">➕ Tambah Item</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ SENARAI ITEM -->
+    <div class="table-box">
+      <div class="table-topbar">
+        <strong>Senarai Item Permohonan</strong>
+        <span>5 item</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Bil.</th>
+            <th>Kod SPS</th>
+            <th>Nama Komponen</th>
+            <th>Spesifikasi</th>
+            <th class="right">Harga/Unit</th>
+            <th class="right">Kuantiti</th>
+            <th class="right">Jumlah</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#9ca3af;font-size:12px">1</td>
+            <td><span class="kod-sps">SPS-0001</span></td>
+            <td><strong>Resistor 10kΩ</strong></td>
+            <td class="spec">1/4W, ±5%, Through-hole</td>
+            <td class="right">RM 0.50</td>
+            <td class="right">100</td>
+            <td class="right"><strong>RM 50.00</strong></td>
+            <td><a class="act-link" href="#">Edit</a><a class="del-link" href="#">Padam</a></td>
+          </tr>
+          <tr>
+            <td style="color:#9ca3af;font-size:12px">2</td>
+            <td><span class="kod-sps">SPS-0002</span></td>
+            <td><strong>Kapasitor 100µF</strong></td>
+            <td class="spec">25V, Electrolytic</td>
+            <td class="right">RM 1.20</td>
+            <td class="right">50</td>
+            <td class="right"><strong>RM 60.00</strong></td>
+            <td><a class="act-link" href="#">Edit</a><a class="del-link" href="#">Padam</a></td>
+          </tr>
+          <tr>
+            <td style="color:#9ca3af;font-size:12px">3</td>
+            <td><span class="kod-sps">SPS-0003</span></td>
+            <td><strong>LED 5mm Merah</strong></td>
+            <td class="spec">2V, 20mA, Through-hole</td>
+            <td class="right">RM 0.30</td>
+            <td class="right">200</td>
+            <td class="right"><strong>RM 60.00</strong></td>
+            <td><a class="act-link" href="#">Edit</a><a class="del-link" href="#">Padam</a></td>
+          </tr>
+          <tr>
+            <td style="color:#9ca3af;font-size:12px">4</td>
+            <td><span class="kod-sps">SPS-0004</span></td>
+            <td><strong>IC 555 Timer</strong></td>
+            <td class="spec">DIP-8, 5–15V</td>
+            <td class="right">RM 1.80</td>
+            <td class="right">30</td>
+            <td class="right"><strong>RM 54.00</strong></td>
+            <td><a class="act-link" href="#">Edit</a><a class="del-link" href="#">Padam</a></td>
+          </tr>
+          <tr>
+            <td style="color:#9ca3af;font-size:12px">5</td>
+            <td><span class="kod-sps">SPS-0005</span></td>
+            <td><strong>Transistor BC547</strong></td>
+            <td class="spec">NPN, TO-92</td>
+            <td class="right">RM 0.80</td>
+            <td class="right">100</td>
+            <td class="right"><strong>RM 80.00</strong></td>
+            <td><a class="act-link" href="#">Edit</a><a class="del-link" href="#">Padam</a></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="right" style="font-weight:600;color:#374151">Jumlah Kos Anggaran:</td>
+            <td class="right" style="font-weight:800;color:#111827">RM 304.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- ⑤ PENGESAHAN PENYELIA -->
+    <div class="pengesahan-card">
+      <div class="pengesahan-head">
+        <span>✍️</span>
+        <h3>Pengesahan Penyelia</h3>
+      </div>
+      <div class="pengesahan-body">
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="chk-sahkan" onchange="toggleButangSahkan()">
+          <label for="chk-sahkan">Saya mengesahkan bahawa semua item yang disenaraikan adalah tepat, benar dan mengikut keperluan sebenar makmal untuk tahun permohonan ini. Permohonan ini adalah tanggungjawab saya sebagai penyelia makmal.</label>
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label>Nama Penyelia Yang Mengesahkan <span class="req">*</span></label>
+            <input type="text" id="inp-nama-sahkan" value="Pn. Noor Amani Binti Salleh">
+          </div>
+          <div>
+            <label>Tarikh Pengesahan <span class="req">*</span></label>
+            <input type="text" id="inp-tarikh-sahkan" value="04/11/2026">
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-green" id="btn-sahkan" disabled onclick="sahkanPermohonan()" style="opacity:0.5;cursor:not-allowed">
+              ✅ Sahkan &amp; Hantar Permohonan
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ⑥ KOTAK RINGKASAN (tersembunyi sehingga disahkan) -->
+    <div class="ringkasan-box" id="ringkasan-box">
+      <div class="ringkasan-title">
+        ✅ Permohonan Berjaya Dihantar untuk Semakan
+      </div>
+
+      <div class="ringkasan-grid">
+        <div class="rg-item">
+          <div class="rg-label">Nombor Rujukan</div>
+          <div class="rg-val rujukan" id="rs-rujukan">—</div>
+        </div>
+        <div class="rg-item">
+          <div class="rg-label">Makmal</div>
+          <div class="rg-val" id="rs-makmal">—</div>
+        </div>
+        <div class="rg-item">
+          <div class="rg-label">Tahun</div>
+          <div class="rg-val" id="rs-tahun">—</div>
+        </div>
+        <div class="rg-item">
+          <div class="rg-label">Nama Pemohon</div>
+          <div class="rg-val" id="rs-pemohon">—</div>
+        </div>
+        <div class="rg-item">
+          <div class="rg-label">Tarikh Hantar</div>
+          <div class="rg-val" id="rs-tarikh">—</div>
+        </div>
+        <div class="rg-item">
+          <div class="rg-label">Status</div>
+          <div class="rg-val"><span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700">Dihantar</span></div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:8px">Senarai Item yang Dihantar:</div>
+      <table class="ringkasan-table">
+        <thead>
+          <tr>
+            <th>Bil.</th>
+            <th>Kod SPS</th>
+            <th>Nama Komponen</th>
+            <th>Spesifikasi</th>
+            <th class="right">Harga/Unit</th>
+            <th class="right">Kuantiti</th>
+            <th class="right">Jumlah</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><span class="kod-sps">SPS-0001</span></td><td><strong>Resistor 10kΩ</strong></td><td class="spec">1/4W, ±5%, Through-hole</td><td class="right">RM 0.50</td><td class="right">100</td><td class="right"><strong>RM 50.00</strong></td></tr>
+          <tr><td>2</td><td><span class="kod-sps">SPS-0002</span></td><td><strong>Kapasitor 100µF</strong></td><td class="spec">25V, Electrolytic</td><td class="right">RM 1.20</td><td class="right">50</td><td class="right"><strong>RM 60.00</strong></td></tr>
+          <tr><td>3</td><td><span class="kod-sps">SPS-0003</span></td><td><strong>LED 5mm Merah</strong></td><td class="spec">2V, 20mA, Through-hole</td><td class="right">RM 0.30</td><td class="right">200</td><td class="right"><strong>RM 60.00</strong></td></tr>
+          <tr><td>4</td><td><span class="kod-sps">SPS-0004</span></td><td><strong>IC 555 Timer</strong></td><td class="spec">DIP-8, 5–15V</td><td class="right">RM 1.80</td><td class="right">30</td><td class="right"><strong>RM 54.00</strong></td></tr>
+          <tr><td>5</td><td><span class="kod-sps">SPS-0005</span></td><td><strong>Transistor BC547</strong></td><td class="spec">NPN, TO-92</td><td class="right">RM 0.80</td><td class="right">100</td><td class="right"><strong>RM 80.00</strong></td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="right" style="font-weight:600;color:#374151">Jumlah Kos Anggaran:</td>
+            <td class="right" style="font-weight:800;color:#1e40af;font-size:14px">RM 304.00</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="ringkasan-footer">
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Cetak</button>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .shell -->
+
+<script>
+function kemaskiniMakmal() {
+  var sel = document.getElementById('sel-makmal');
+  var val = sel.value;
+  if (!val) {
+    document.getElementById('sub-makmal').textContent = 'Sila pilih makmal di bawah untuk memulakan permohonan';
+    document.getElementById('inp-rujukan').value = '';
+    document.getElementById('display-tahun').textContent = '—';
+    return;
+  }
+  var parts = val.split('|');
+  var kod = parts[0], nama = parts[1];
+  document.getElementById('sub-makmal').textContent = nama + ' (' + kod + ')';
+  kemaskiniRujukan();
+}
+
+function kemaskiniRujukan() {
+  var sel = document.getElementById('sel-makmal');
+  var tahun = document.getElementById('inp-tahun').value;
+  var val = sel.value;
+  if (!val || !tahun) return;
+  var kod = val.split('|')[0];
+  var rujukan = 'JKE/KEW/12/27000/' + kod + '/' + tahun;
+  document.getElementById('inp-rujukan').value = rujukan;
+  document.getElementById('display-tahun').textContent = tahun;
+}
+
+function toggleButangSahkan() {
+  var chk = document.getElementById('chk-sahkan');
+  var btn = document.getElementById('btn-sahkan');
+  if (chk.checked) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+
+function sahkanPermohonan() {
+  var sel = document.getElementById('sel-makmal');
+  var val = sel.value;
+  var makmalNama = val ? val.split('|')[1] + ' (' + val.split('|')[0] + ')' : '—';
+  var rujukan = document.getElementById('inp-rujukan').value || '—';
+  var pemohon = document.getElementById('inp-pemohon').value || '—';
+  var tahun = document.getElementById('inp-tahun').value || '—';
+  var tarikh = document.getElementById('inp-tarikh-sahkan').value || '—';
+
+  // Kemas kini kotak ringkasan
+  document.getElementById('rs-rujukan').textContent = rujukan;
+  document.getElementById('rs-makmal').textContent = makmalNama;
+  document.getElementById('rs-tahun').textContent = tahun;
+  document.getElementById('rs-pemohon').textContent = pemohon;
+  document.getElementById('rs-tarikh').textContent = tarikh;
+
+  // Tunjuk ringkasan
+  document.getElementById('ringkasan-box').classList.add('show');
+
+  // Kemas kini status bar
+  var badge = document.getElementById('badge-status');
+  badge.textContent = 'Dihantar';
+  badge.className = 'badge dihantar';
+  document.getElementById('label-status').textContent = 'Dihantar pada ' + tarikh;
+
+  // Skrol ke ringkasan
+  document.getElementById('ringkasan-box').scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+
+<script>
+// Papar nama pengguna dari sessionStorage
+var _n = sessionStorage.getItem('mytvet_nama');
+if (_n) {
+  document.getElementById('topnav-nama').textContent = _n;
+  // Isi semula medan nama pemohon dan nama pengesahan jika masih kosong atau nilai asal
+  var elPemohon = document.getElementById('inp-pemohon');
+  var elSahkan  = document.getElementById('inp-nama-sahkan');
+  if (elPemohon) elPemohon.value = _n;
+  if (elSahkan)  elSahkan.value  = _n;
+}
+</script>
+
+</body>
+</html>
